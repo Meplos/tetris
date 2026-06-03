@@ -50,9 +50,11 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            if [ -n "${{ secrets.GHCR_PAT }}" ]; then
-              docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+            if [ -z "${{ secrets.GHCR_PAT }}" ]; then
+              echo "Missing GHCR_PAT secret (needs read:packages)"
+              exit 1
             fi
+            docker login ghcr.io -u ${{ secrets.GHCR_USER || github.actor }} -p ${{ secrets.GHCR_PAT }}
             docker pull ${{ env.IMAGE }}
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm ${{ env.CONTAINER_NAME }} || true
